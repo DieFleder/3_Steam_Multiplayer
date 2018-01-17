@@ -29,8 +29,17 @@ UPuzzelPlatformsGameInstance::UPuzzelPlatformsGameInstance(const FObjectInitiali
 void UPuzzelPlatformsGameInstance::Init()
 {
 	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
-	if (!ensure(Subsystem)) return;
-	UE_LOG(LogTemp, Warning, TEXT("Subsystem Name: %s"), *Subsystem->GetSubsystemName().ToString())
+	if (Subsystem != nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Subsystem Name: %s"), *Subsystem->GetSubsystemName().ToString())
+		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+		if (SessionInterface.IsValid())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Found session interface"), *Subsystem->GetSubsystemName().ToString())
+		}
+	}
+
+
 }
 
 void UPuzzelPlatformsGameInstance::LoadMainMenu()
