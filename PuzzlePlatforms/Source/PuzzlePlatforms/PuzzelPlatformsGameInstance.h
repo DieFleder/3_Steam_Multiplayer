@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "OnlineSubsystem.h"
 #include "MenuSystem/MenuInterface.h"
 #include "PuzzelPlatformsGameInstance.generated.h"
 
@@ -43,4 +44,8 @@ private:
 	class UMainMenu* MainMenu;
 	
 	class UInGameMenu* InGameMenu;
+
+	IOnlineSessionPtr SessionInterface;
+
+	void OnCreateSessionComplete(FName SessionName, bool Success);
 };
