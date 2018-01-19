@@ -13,6 +13,7 @@
 #include "MenuSystem/InGameMenu.h"
 #include "Kismet/GameplayStatics.h"
 
+const static FName SESSION_NAME = TEXT("My Session Game");
 
 UPuzzelPlatformsGameInstance::UPuzzelPlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -37,6 +38,15 @@ void UPuzzelPlatformsGameInstance::Init()
 		if (SessionInterface.IsValid())
 		{
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &UPuzzelPlatformsGameInstance::OnCreateSessionComplete);
+			SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this, &UPuzzelPlatformsGameInstance::OnDestroySessionComplete);
+			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UPuzzelPlatformsGameInstance::OnFindSessionsComplete);
+
+			SessionSearch = MakeShareable(new FOnlineSessionSearch());
+			if (SessionSearch.IsValid())
+			{
+				SessionSearch->bIsLanQuery = true;
+				SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
+			}
 		}
 	}
 }
@@ -67,8 +77,15 @@ void UPuzzelPlatformsGameInstance::Host()
 {
 	if (SessionInterface.IsValid())
 	{
-		FOnlineSessionSettings SessionSettings;
-		SessionInterface->CreateSession(0, TEXT("My Session Game"), SessionSettings);
+		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
+		if (ExistingSession != nullptr)
+		{
+			SessionInterface->DestroySession(SESSION_NAME);
+		}
+		else
+		{
+			CreateSession();
+		}
 	}
 }
 
@@ -100,6 +117,14 @@ void UPuzzelPlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bo
 	if (!ensure(PlayerController != nullptr)) return;
 }
 
+void UPuzzelPlatformsGameInstance::OnDestroySessionComplete(FName SessionName, bool Success)
+{
+	if (Success)
+	{
+		CreateSession();
+	}
+}
+
 void UPuzzelPlatformsGameInstance::Join(const FString& Address)
 {
 	if (MainMenu != nullptr)
@@ -127,4 +152,35 @@ void UPuzzelPlatformsGameInstance::QuitToMainMenu()
 	if (!ensure(World != nullptr)) return;
 
 	PlayerController->ClientTravel("/Game/MenuSystem/LoadMenu", ETravelType::TRAVEL_Absolute);
+}
+
+void UPuzzelPlatformsGameInstance::CreateSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		FOnlineSessionSettings SessionSettings;
+		SessionSettings.bIsLANMatch = true;
+		SessionSettings.NumPublicConnections = 2;
+		SessionSettings.bShouldAdvertise = true;
+		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
+	}
+}
+
+void UPuzzelPlatformsGameInstance::OnFindSessionsComplete(bool Success)
+{
+	if (Success && SessionSearch.IsValid())
+	{
+		if (SessionSearch->SearchResults.Num() <= 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("0 sessions found"))
+			return;
+		}
+		else
+		{
+			for (const FOnlineSessionSearchResult& Result : SessionSearch->SearchResults)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Session: %s was found"), *Result.GetSessionIdStr())
+			}
+		}
+	}
 }
