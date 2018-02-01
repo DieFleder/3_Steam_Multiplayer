@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "OnlineSubsystem.h"
+#include "OnlineSessionInterface.h"
 #include "MenuSystem/MenuInterface.h"
 #include "PuzzelPlatformsGameInstance.generated.h"
 
@@ -34,7 +35,10 @@ public:
 	void Host();
 
 	UFUNCTION(Exec)
-	void Join(const FString& Address);
+	void Join(uint32 Index) override;
+
+	UFUNCTION(Exec)
+	void RefreshServerList() override;
 
 private:
 	TSubclassOf<class UUserWidget> MainMenuClass;
@@ -54,6 +58,8 @@ private:
 	void OnDestroySessionComplete(FName SessionName, bool Success);
 
 	void OnFindSessionsComplete(bool Success);
+	
+	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 	
 	void CreateSession();
 };
