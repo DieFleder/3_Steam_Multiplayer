@@ -7,6 +7,17 @@
 #include "MenuInterface.h"
 #include "MainMenu.generated.h"
 
+USTRUCT()
+struct FServerData 
+{
+	GENERATED_BODY()
+
+	FString Name;
+	uint16 CurentPlayers;
+	uint16 MaxPlayers;
+	FString HostUsername;
+};
+
 /**
  * 
  */
@@ -20,7 +31,7 @@ public:
 
 	void SetMenuInterface(IMenuInterface* Interface);
 
-	void SetServerList(TArray<FString> ServerNames);
+	void SetServerList(TArray<FServerData> ServerNames);
 
 	void Setup();
 
@@ -79,4 +90,6 @@ private:
 	void QuitGame();
 
 	TOptional<uint32> SelectedIndex;
+	
+	void UpdateChildren();
 };

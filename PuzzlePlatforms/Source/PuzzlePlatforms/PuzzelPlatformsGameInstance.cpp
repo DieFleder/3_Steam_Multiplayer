@@ -161,9 +161,17 @@ void UPuzzelPlatformsGameInstance::CreateSession()
 	if (SessionInterface.IsValid())
 	{
 		FOnlineSessionSettings SessionSettings;
-		SessionSettings.bIsLANMatch = true;
+		if (IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
+		{
+			SessionSettings.bIsLANMatch = true;
+		}
+		else
+		{
+			SessionSettings.bIsLANMatch = false;
+		}
 		SessionSettings.NumPublicConnections = 2;
 		SessionSettings.bShouldAdvertise = true;
+		SessionSettings.bUsesPresence = true;
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
 }
@@ -173,7 +181,9 @@ void UPuzzelPlatformsGameInstance::RefreshServerList()
 	SessionSearch = MakeShareable(new FOnlineSessionSearch());
 	if (SessionSearch.IsValid())
 	{
-		SessionSearch->bIsLanQuery = true;
+		//SessionSearch->bIsLanQuery = true;
+		SessionSearch->MaxSearchResults = 100;
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 		SessionInterface->FindSessions(0, SessionSearch.ToSharedRef());
 	}
 }
@@ -182,19 +192,17 @@ void UPuzzelPlatformsGameInstance::OnFindSessionsComplete(bool Success)
 {
 	if (Success && SessionSearch.IsValid() && MainMenu != nullptr)
 	{
-		if (SessionSearch->SearchResults.Num() <= 0)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("0 sessions found"))
-			return;
-		}
-		else
-		{
-			TArray<FString> ServerNames;
+		
+			TArray<FServerData> ServerNames;
 			for (const FOnlineSessionSearchResult& Result : SessionSearch->SearchResults)
 			{
-				ServerNames.Add(Result.GetSessionIdStr());
+				FServerData Data;
+				Data.Name = Result.GetSessionIdStr();
+				Data.MaxPlayers = Result.Session.SessionSettings.NumPublicConnections;
+				Data.CurentPlayers = Data.MaxPlayers - Result.Session.NumOpenPublicConnections;
+				Data.HostUsername = Result.Session.OwningUserName;
+				ServerNames.Add(Data);
 			}
 			MainMenu->SetServerList(ServerNames);
-		}
 	}
 }
