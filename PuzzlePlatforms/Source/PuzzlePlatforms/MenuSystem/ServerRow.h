@@ -26,9 +26,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* Players;
-
-	//UPROPERTY(meta = (BindWidget))
-	//class UTextBlock* ServerIndex;
 	
 	void Setup(class UMainMenu* Parent, uint32 Index);
 	

@@ -8,6 +8,8 @@
 #include "Blueprint/UserWidget.h"
 #include "OnlineSessionSettings.h"
 
+#include "Components/EditableText.h"
+
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/InGameMenu.h"
 #include "Kismet/GameplayStatics.h"
@@ -172,6 +174,11 @@ void UPuzzelPlatformsGameInstance::CreateSession()
 		SessionSettings.NumPublicConnections = 2;
 		SessionSettings.bShouldAdvertise = true;
 		SessionSettings.bUsesPresence = true;
+
+		FString ServerName = MainMenu->ServerNameInput->GetText().ToString();
+		UE_LOG(LogTemp, Warning, TEXT("ServerName: %s"), *ServerName)
+
+		SessionSettings.Set(TEXT("CustomServerName"), ServerName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);
 	}
 }
@@ -197,10 +204,20 @@ void UPuzzelPlatformsGameInstance::OnFindSessionsComplete(bool Success)
 			for (const FOnlineSessionSearchResult& Result : SessionSearch->SearchResults)
 			{
 				FServerData Data;
-				Data.Name = Result.GetSessionIdStr();
+				//Data.Name = Result.GetSessionIdStr();			
 				Data.MaxPlayers = Result.Session.SessionSettings.NumPublicConnections;
 				Data.CurentPlayers = Data.MaxPlayers - Result.Session.NumOpenPublicConnections;
 				Data.HostUsername = Result.Session.OwningUserName;
+				FString TestSetting;
+				if (Result.Session.SessionSettings.Get(TEXT("CustomServerName"), TestSetting))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Data found in settings: %s"), *TestSetting)
+						Data.Name = TestSetting;
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Didn't get expected data"))
+				}
 				ServerNames.Add(Data);
 			}
 			MainMenu->SetServerList(ServerNames);

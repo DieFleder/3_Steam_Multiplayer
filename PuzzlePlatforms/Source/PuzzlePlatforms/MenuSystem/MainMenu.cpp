@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/EditableTextBox.h"
+#include "Components/EditableText.h"
 #include "Components/PanelWidget.h"
 #include "Components/TextBlock.h"
 #include "ServerRow.h"
@@ -26,7 +27,10 @@ bool UMainMenu::Initialize()
 	if (!Success) return false;
 
 	if (!ensure(HostButton != nullptr)) return false;
-	HostButton->OnClicked.AddDynamic(this, &UMainMenu::HostServer);
+	HostButton->OnClicked.AddDynamic(this, &UMainMenu::OpenCreateServerMenu);
+
+	if (!ensure(CreateServerButton != nullptr)) return false;
+	CreateServerButton->OnClicked.AddDynamic(this, &UMainMenu::HostServer);
 
 	if (!ensure(JoinButton != nullptr)) return false;
 	JoinButton->OnClicked.AddDynamic(this, &UMainMenu::OpenJoinMenu);
@@ -34,8 +38,11 @@ bool UMainMenu::Initialize()
 	if (!ensure(JoinServerButton != nullptr)) return false;
 	JoinServerButton->OnClicked.AddDynamic(this, &UMainMenu::JoinServer);
 
-	if (!ensure(CancelButton != nullptr)) return false;
-	CancelButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
+	if (!ensure(CancelJoinButton != nullptr)) return false;
+	CancelJoinButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
+
+	if (!ensure(CancelCreateButton != nullptr)) return false;
+	CancelCreateButton->OnClicked.AddDynamic(this, &UMainMenu::OpenMainMenu);
 
 	if (!ensure(QuitButton != nullptr)) return false;
 	QuitButton->OnClicked.AddDynamic(this, &UMainMenu::QuitGame);
@@ -78,7 +85,7 @@ void UMainMenu::SetServerList(TArray<FServerData> ServerNames)
 	{
 		UServerRow* Row = CreateWidget<UServerRow>(World, ServerRowClass);
 		if (!ensure(Row != nullptr)) return;
-
+		
 		Row->ServerName->SetText(FText::FromString(ServerData.Name));
 		Row->HostName->SetText(FText::FromString(ServerData.HostUsername));
 		FString Players = FString::FromInt(ServerData.CurentPlayers) 
@@ -118,6 +125,17 @@ void UMainMenu::OpenJoinMenu()
 	if (MenuInterface != nullptr)
 	{
 		MenuInterface->RefreshServerList();
+	}
+}
+
+void UMainMenu::OpenCreateServerMenu()
+{
+	if (!ensure(MenuSwitcher != nullptr)) return;
+	if (!ensure(CreateServerMenu != nullptr)) return;
+	MenuSwitcher->SetActiveWidget(CreateServerMenu);
+	if (MenuInterface != nullptr)
+	{
+		
 	}
 }
 

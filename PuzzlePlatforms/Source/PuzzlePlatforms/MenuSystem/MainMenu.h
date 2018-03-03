@@ -38,6 +38,9 @@ public:
 	void Teardown();
 
 	void SelectIndex(uint32 Index);
+
+	UPROPERTY(meta = (BindWidget))
+	class UEditableText* ServerNameInput;
 	
 protected:
 	virtual bool Initialize() override;
@@ -57,16 +60,25 @@ private:
 	class UButton* JoinServerButton;
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* CancelButton;
+	class UButton* CancelJoinButton;
 
 	UPROPERTY(meta = (BindWidget))
 	class UButton* QuitButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* CreateServerButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* CancelCreateButton;
 
 	UPROPERTY(meta = (BindWidget))
 	class UWidgetSwitcher* MenuSwitcher;
 
 	UPROPERTY(meta = (BindWidget))
 	class UWidget* JoinMenu;
+
+	UPROPERTY(meta = (BindWidget))
+	class UWidget* CreateServerMenu;
 
 	UPROPERTY(meta = (BindWidget))
 	class UWidget* MainMenu;
@@ -82,6 +94,9 @@ private:
 
 	UFUNCTION()
 	void OpenJoinMenu();
+
+	UFUNCTION()
+	void OpenCreateServerMenu();
 
 	UFUNCTION()
 	void OpenMainMenu();
