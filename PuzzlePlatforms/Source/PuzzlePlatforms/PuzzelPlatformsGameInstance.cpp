@@ -9,12 +9,11 @@
 #include "OnlineSessionSettings.h"
 
 #include "Components/EditableText.h"
-
 #include "MenuSystem/MainMenu.h"
 #include "MenuSystem/InGameMenu.h"
 #include "Kismet/GameplayStatics.h"
 
-const static FName SESSION_NAME = TEXT("My Session Game");
+const static FName SESSION_NAME = TEXT("Game");
 
 UPuzzelPlatformsGameInstance::UPuzzelPlatformsGameInstance(const FObjectInitializer & ObjectInitializer)
 {
@@ -27,6 +26,11 @@ UPuzzelPlatformsGameInstance::UPuzzelPlatformsGameInstance(const FObjectInitiali
 	if (!ensure(InGameMenuBPClass.Class != nullptr)) return;
 
 	InGameMenuClass = InGameMenuBPClass.Class;
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> LoadingBPClass(TEXT("/Game/PuzzelPlatforms/Maps/WBP_Loading"));
+	if (!ensure(LoadingBPClass.Class != nullptr)) return;
+
+	LoadScreenClass = LoadingBPClass.Class;
 }
 
 void UPuzzelPlatformsGameInstance::Init()
@@ -55,6 +59,12 @@ void UPuzzelPlatformsGameInstance::LoadMainMenu()
 
 	MainMenu->Setup();
 	MainMenu->SetMenuInterface(this);
+}
+
+void UPuzzelPlatformsGameInstance::LoadLoadScreen()
+{
+	if (!ensure(LoadScreenClass != nullptr)) return;
+
 }
 
 void UPuzzelPlatformsGameInstance::LoadInGameMenu()
@@ -106,7 +116,7 @@ void UPuzzelPlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bo
 	UWorld* World = GetWorld();
 	if (!ensure(World != nullptr)) return;
 
-	World->ServerTravel("/Game/ThirdPersonCPP/Maps/ThirdPersonExampleMap?listen");
+	World->ServerTravel("/Game/PuzzelPlatforms/Maps/Lobby?listen");
 
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	if (!ensure(PlayerController != nullptr)) return;
@@ -171,7 +181,7 @@ void UPuzzelPlatformsGameInstance::CreateSession()
 		{
 			SessionSettings.bIsLANMatch = false;
 		}
-		SessionSettings.NumPublicConnections = 2;
+		SessionSettings.NumPublicConnections = 5;
 		SessionSettings.bShouldAdvertise = true;
 		SessionSettings.bUsesPresence = true;
 
@@ -221,5 +231,13 @@ void UPuzzelPlatformsGameInstance::OnFindSessionsComplete(bool Success)
 				ServerNames.Add(Data);
 			}
 			MainMenu->SetServerList(ServerNames);
+	}
+}
+
+void UPuzzelPlatformsGameInstance::StartSession()
+{
+	if (SessionInterface.IsValid())
+	{
+		SessionInterface->StartSession(SESSION_NAME);
 	}
 }

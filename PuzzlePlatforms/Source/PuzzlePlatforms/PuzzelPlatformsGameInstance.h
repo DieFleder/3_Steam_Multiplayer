@@ -26,6 +26,9 @@ public:
 	void LoadMainMenu();
 
 	UFUNCTION(Exec, BlueprintCallable)
+	void LoadLoadScreen();
+
+	UFUNCTION(Exec, BlueprintCallable)
 	void LoadInGameMenu();
 
 	UFUNCTION(Exec, BlueprintCallable)
@@ -40,14 +43,20 @@ public:
 	UFUNCTION(Exec)
 	void RefreshServerList() override;
 
+	void StartSession();
+
 private:
 	TSubclassOf<class UUserWidget> MainMenuClass;
 
 	TSubclassOf<class UUserWidget> InGameMenuClass;
 
+	TSubclassOf<class UUserWidget> LoadScreenClass;
+
 	class UMainMenu* MainMenu;
 	
 	class UInGameMenu* InGameMenu;
+
+	class ULoadScreenMenu* LoadScreen;
 
 	IOnlineSessionPtr SessionInterface;
 
